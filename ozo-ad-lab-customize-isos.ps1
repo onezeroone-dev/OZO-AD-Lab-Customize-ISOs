@@ -4,3 +4,11 @@
         Unblock-File "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\OZO-AD-Lab-Router.iso"
     }
 #>
+
+Function New-OZOWSLPathFromWindowsPath {
+    param(
+        [Parameter(Mandatory=$true,HelpMessage="The Windows path to convert")][String]$WindowsPath
+    )
+    # Local variables
+    return ($WindowsPath.Replace("\","/")).Replace($Env:SystemDrive,("/mnt/" + ($Env:SystemDrive.Split(":"))[0].ToLower()))
+}
