@@ -1,5 +1,5 @@
-# OZO PowerShell Script Template
+# OZO AD Lab Customize ISOs Change Log
 
 |Date|Version|Comment|
 |----|-------|-------|
-|YYYY-MM-DD|1.0.0|Initial release.|
+|2025-Mar-03|0.1.0|Testing release.|
