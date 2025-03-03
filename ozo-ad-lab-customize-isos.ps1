@@ -21,6 +21,8 @@
     See description.
     .DESCRIPTION 
     Leverages resources from the One Zero One AD Lab release to customize AlmaLinux and Microsoft installer ISOs.
+    .PARAMETER OZOADLabDir
+    Location of the "ozo-ad-lab" directory. Defaults to $Env:SystemDrive\ozo-ad-lab.
     .LINK
     https://github.com/onezeroone-dev/OZO-AD-Lab-Customize-ISOs/blob/main/README.md
 #>
@@ -413,17 +415,13 @@ Class OZOADLCIISO {
         [Boolean] $Return = $true
         # Try to install RSAT
         Try {
-            Write-Host "Skipping RSAT"
-            #[String] $rsatSource   = (Join-Path -Path $mountDrive -ChildPath "LanguagesAndOptionalFeatures\")
-            #[Array]  $rsatPackages = (Get-WindowsCapability -Online -Name "RSAT*" -Source $rsatSource -ErrorAction Stop)
-            #(Add-WindowsCapability -Name ($rsatPackages.Name -Join ",") -Source $rsatSource -Path $customMountDir -ErrorAction Stop)
-            # Success; 
+            [String] $rsatSource = (Join-Path -Path $this.mountDrive -ChildPath "LanguagesAndOptionalFeatures")
+            Get-WindowsCapability -Online -Name "RSAT*" -Source $rsatSource -ErrorAction Stop | Add-WindowsCapability -Source $rsatSource -Path $this.customISOMountDir -ErrorAction Stop
+            # Success
         } Catch {
             # Failure
-            #$this.Logger.Write("Failed to install RSAT; skipping.","Warning")
-            $this.Messages.Add(("Failed to install RSAT; skipping. Error message is " + $_))
+            $this.Messages.Add("Failed to install RSAT; skipping.")
             $Return = $false
-            
         }
         # Return
         return $Return
