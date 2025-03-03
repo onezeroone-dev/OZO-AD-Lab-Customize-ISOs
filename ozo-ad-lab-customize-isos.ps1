@@ -285,7 +285,7 @@ Class OZOADLCIISO {
         # Mount the source ISO
         If ($this.MountISO($this.sourceISOPath) -eq $true) {
             # Source ISO mount; copy the contents to the build directory
-            If ($this.CopyISO() -eq $true) {
+            If ($this.CopyISO((Join-Path -Path $this.mountDrive -ChildPath "*"),$this.customISOBuildDir) -eq $true) {
                 # Contents copied; dismount the ISO
                 If ($this.DismountISO($this.sourceISOPath) -eq $true) {
                     # ISO dismounted; move the install WIM
@@ -296,7 +296,7 @@ Class OZOADLCIISO {
                             Switch($this.Build) {
                                 "Client" {
                                     # Mount the WIM for customization
-                                    If ($this.MountWIM((Join-Path -Path $this.customISOMountDir -ChildPath "sources\install.wim"),1,$this.customISOMountDir) -eq $true) {
+                                    If ($this.MountWIM((Join-Path -Path $this.customISOBuildDir -ChildPath "sources\install.wim"),1,$this.customISOMountDir) -eq $true) {
                                         # Mounted the WIM for customization; mount the LAoF ISO
                                         If ($this.MountISO($this.SourceLAoFISOPath) -eq $true) {
                                             # LAoF ISO mounted; Install RSAT
