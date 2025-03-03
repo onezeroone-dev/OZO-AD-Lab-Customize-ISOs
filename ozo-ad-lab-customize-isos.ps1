@@ -43,12 +43,23 @@ Class OZOADLCIMain {
     # Constructor method
     OZOADLCIMain($OZOADLabDir) {
         # Set properties
-        $this.downloadsDirectory     = (Join-Path -Path $Env:USERPROFILE -ChildPath "Downloads")
-        $this.ozoADLabDirectory      = $OZOADLabDir
+        $this.downloadsDirectory = (Join-Path -Path $Env:USERPROFILE -ChildPath "Downloads")
+        $this.ozoADLabDirectory  = $OZOADLabDir
         # Create a logger object
         $this.Logger = (New-OZOLogger)
         # Log a process start message
         $this.Logger.Write("Process starting.","Information")
+         # Router
+         $this.Logger.Write("Processing the Router ISO.","Information")
+         $this.ISO = [OZOADLCIISO]::new(
+             "Router", #Build
+             "AlmaLinux-9-5-x86_64-dvd", #CustomISOLabel
+             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Linux"), #CustomISOLinuxDir
+             (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Router.iso"), #CustomISOMOvePath
+             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "OZO-AD-Lab-Router.iso"), #CustomISOOutputPath
+             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\almalinux-boot.iso") #SourceISOPath
+         )
+         $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
         # Client
         $this.Logger.Write("Processing the Client ISO.","Information")
         $this.ISO = [OZOADLCIISO]::new(
@@ -57,13 +68,13 @@ Class OZOADLCIMain {
             "OZO-AD-Lab-Client", #CustomISOLabel
             (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Client.iso"), #CustomISOMovePath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Mount"), #CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO"), #CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\OZO-AD-Lab-Client.iso"), #CustomISOOutputPath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "WIM\Windows 11 Enterprise"), #CustomWIMDir
             1, #SourceIndex
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-11-enterprise-evaluation.iso"), #SourceISOPath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-11-laof.iso") #SourceLAoFISOPath
         )
-        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join(`r`n))),"Information")
+        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
         # DC
         $this.Logger.Write("Processing the DC ISO.","Information")
         $this.ISO = [OZOADLCIISO]::new(
@@ -72,13 +83,13 @@ Class OZOADLCIMain {
             "OZO-AD-Lab-DC", #CustomISOLabel
             (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-DC.iso"), #CustomISOMovePath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Mount"), #CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO"), #CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\OZO-AD-Lab-DC.iso"), #CustomISOOutputPath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "WIM\Windows Server 2022"), #CustomWIMDir
             2, #SourceIndex
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-server-2022-evaluation.iso"), #SourceISOPath
             $null #SourceLAoFISOPath
         )
-        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join(`r`n))),"Information")
+        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
         # Server
         $this.Logger.Write("Processing the Server ISO.","Information")
         $this.ISO = [OZOADLCIISO]::new(
@@ -87,24 +98,13 @@ Class OZOADLCIMain {
             "OZO-AD-Lab-DC", #CustomISOLabel
             (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Server.iso"), #CustomISOMovePath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Mount"), #CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO"), #CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\OZO-AD-Lab-Server.iso"), #CustomISOOutputPath
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "WIM\Windows Server 2022"), #CustomWIMDir
             2, #SourceIndex
             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-server-2022-evaluation.iso"), #SourceISOPath
             $null #SourceLAoFISOPath
         )
-        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join(`r`n))),"Information")
-        # Router
-        $this.Logger.Write("Processing the Router ISO.","Information")
-        $this.ISO = [OZOADLCIISO]::new(
-            "Router", #Build
-            "AlmaLinux-9-5-x86_64-dvd", #CustomISOLabel
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Linux"), #CustomISOLinuxDir
-            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Router.iso"), #CustomISOMOvePath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "OZO-AD-Lab-Router.iso"), #CustomISOOutputPath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\almalinux-boot.iso") #SourceISOPath
-        )
-        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join(`r`n))),"Information")
+        $this.Logger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
         # Log a process end message
         $this.Logger.Write("Process complete.","Information")
     }
@@ -210,10 +210,14 @@ Class OZOADLCIISO {
         [String] $wslScriptPath     = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-create-router-iso.sh"))
         # Determine if this ISO is valid
         If ($this.Validates -eq $true) {
-            # ISO is valid; use WSL to call the AlmaLinux ISO customization script in Debian
+            # ISO is valid; use WSL Debian to call the AlmaLinux ISO customization script
             $wslResult = (& wsl --distribution "Debian" --user root KICKSTART_PATH="$wslKickstartPath" SOURCE_ISO_PATH="$wslSourceISOPath" TARGET_ISO_PATH="$wslTargetISOPath" TARGET_ISO_LABEL="$wslTargetISOLabel" $wslScriptPath)
             If ($wslResult -eq "TRUE") {
-                $this.MoveISO()
+                # Move the ISO
+                If ($this.MoveISO() -eq $true) {
+                    # Moved ISO; report success
+                    $this.Messages.Add("Success")
+                }
             } Else {
                 $this.Messages.Add(("Error creating " + $this.customISOOutputPath))
             }
@@ -238,7 +242,7 @@ Class OZOADLCIISO {
         # Determine if the custom ISO already exists in the OZO AD Lab directory
         If ((Test-Path -Path $this.customISOOutputPath) -eq $true) {
             # Custom ISO exists in the OZO AD Lab directory
-            $this.Messages.Add(("Found " + $this.customISOMovePath + "; skipping."))
+            $this.Messages.Add(("Found " + $this.customISOOutputPath + "; skipping."))
             $Return = $false
         }
         # Determine if the source ISO does not exist
@@ -248,7 +252,7 @@ Class OZOADLCIISO {
             $Return = $false
         }
         # Determine that the build directory exists
-        If ((Test-Path -Path $this.custoISOBuildDir) -eq $false) {
+        If ((Test-Path -Path $this.customISOBuildDir) -eq $false) {
             $this.Messages.Add("Build directory does not exist; skipping.")
             $Return = $false
         }
@@ -303,7 +307,10 @@ Class OZOADLCIISO {
                                                         # Create the Windows ISO
                                                         If ($this.CreateWinISO() -eq $true) {
                                                             # Move the ISO
-                                                            $this.MoveISO()
+                                                            If ($this.MoveISO() -eq $true) {
+                                                                # Moved ISO; report success
+                                                                $this.Messages.Add("Success")
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -320,7 +327,10 @@ Class OZOADLCIISO {
                                     # Create the Windows ISO
                                     If ($this.CreateWinISO() -eq $true) {
                                         # Move the ISO
-                                        $this.MoveISO()
+                                        If ($this.MoveISO() -eq $true) {
+                                            # Moved ISO; report success
+                                            $this.Messages.Add("Success")
+                                        }
                                     }
                                     break
                                 }
@@ -328,7 +338,10 @@ Class OZOADLCIISO {
                                     # Create the Windows ISO
                                     If ($this.CreateWinISO() -eq $true) {
                                         # Move the ISO
-                                        $this.MoveISO()
+                                        If ($this.MoveISO() -eq $true) {
+                                            # Moved ISO; report success
+                                            $this.Messages.Add("Success")
+                                        }
                                     }
                                     break
                                 }
