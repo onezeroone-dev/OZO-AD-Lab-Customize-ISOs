@@ -188,6 +188,7 @@ Class OZOADLCIISO {
         # Local variables
         [String] $wslResult         = $null
         [String] $wslGrubPath       = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-ad-lab-grub.cfg"))
+        [String] $wslGrubStubPath   = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-ad-lab-grub-stub.cfg"))
         [String] $wslKickstartPath  = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-ad-lab-router-ks.cfg"))
         [String] $wslSourceISOPath  = (New-OZOWSLPathFromWindowsPath -WindowsPath $this.sourceISOPath)
         [String] $wslTargetISOPath  = (New-OZOWSLPathFromWindowsPath -WindowsPath $this.customISOOutputPath)
@@ -196,7 +197,7 @@ Class OZOADLCIISO {
         # Determine if this ISO is valid
         If ($this.Validates -eq $true) {
             # ISO is valid; use WSL Debian to call the AlmaLinux ISO customization script
-            $wslResult = (& wsl --distribution "Debian" --user root GRUB_PATH="$wslGrubPath" KICKSTART_PATH="$wslKickstartPath" SOURCE_ISO_PATH="$wslSourceISOPath" TARGET_ISO_PATH="$wslTargetISOPath" TARGET_ISO_LABEL="$wslTargetISOLabel" $wslScriptPath)
+            $wslResult = (& wsl --distribution "Debian" --user root GRUB_STUB_PATH = "$wslGrubStubPath" GRUB_PATH="$wslGrubPath" KICKSTART_PATH="$wslKickstartPath" SOURCE_ISO_PATH="$wslSourceISOPath" TARGET_ISO_PATH="$wslTargetISOPath" TARGET_ISO_LABEL="$wslTargetISOLabel" $wslScriptPath)
             If ($wslResult -eq "TRUE") {
                 # Move the ISO
                 If ($this.MoveISO() -eq $true) {
