@@ -287,4 +287,4 @@ Class OzoISO {
 }
 
 # Create a Main object
-[OZOADLCIMain]::new($OZOADLabDir) | Out-Null
+[Main]::new($OZOADLabDir) | Out-Null
