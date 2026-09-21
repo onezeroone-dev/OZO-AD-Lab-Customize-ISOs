@@ -1,7 +1,7 @@
 # OZO AD Lab Customize ISOs
 
 ## Description
-An interactive script that automates [part](https://onezeroone.dev/active-directory-lab-part-ii-customize-the-installer-isos/) of a One Zero One [series](https://onezeroone.dev/active-directory-lab-part-i-introduction/) that illustrates how to automate the process of deploying an AD Lab. It leverages resources from the [One zero One AD Lab resources](https://github.com/onezeroone-dev/OZO-AD-Lab/releases/tag/v0.0.3) to customize AlmaLinux and Microsoft installer ISOs. If a customized ISO is found, it is skipped.
+An interactive script that automates [part](https://onezeroone.dev/active-directory-lab-part-ii-customize-the-installer-isos/) of a One Zero One [series](https://onezeroone.dev/active-directory-lab-part-i-introduction/) that illustrates how to automate the process of deploying an AD Lab. It customizes Microsoft installer ISOs for use with the [One zero One AD Lab](https://github.com/onezeroone-dev/OZO-AD-Lab/releases/tag/v0.0.3). If a customized ISO is found, it is skipped.
 
 ## Prerequisites
 To use this script you must first implement the [Active Directory Lab Part II: Customization Prerequisites](https://onezeroone.dev/active-directory-lab-part-ii-customization-prerequisites/).
