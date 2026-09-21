@@ -1,4 +1,4 @@
-#Requires -Modules @{ModuleName="OZO";ModuleVersion="1.5.1"},OZOLogger -Version 5.1
+#Requires -Modules @{ModuleName="OZO";ModuleVersion="1.5.1"},OZOLogger -Version 5.1 -RunAsAdministrator
 
 <#PSScriptInfo
     .VERSION 1.0.0
@@ -240,7 +240,7 @@ Class OzoISO {
             # Success; 
         } Catch {
             # Failure
-            $this.Messages.Add(("Failed to export Index " + $ImageIndex.ToString() + " from " + $ImagePath))
+            $this.Messages.Add(("Failed to export Index " + $ImageIndex.ToString() + " from " + $ImagePath + " with error " + $_))
             $Return = $false
         }
         # Return
