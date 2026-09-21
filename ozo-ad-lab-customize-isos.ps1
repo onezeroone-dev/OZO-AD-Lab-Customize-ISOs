@@ -52,25 +52,25 @@ Class Main {
         $this.ozoLogger.Write("Process starting.","Information")
         # Process the client ISO
         $this.ozoISOs.Add(([OzoISO]::new(
-            "OZO-AD-Lab-Client",                                                                                       # CustomISOLabel
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Builds\Client"),                                     # CustomISOBUildDir
-            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Client.iso"),                             # CustomISOMovePath
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Mount"),                                             # CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "ISO\OZO-AD-Lab-Client.iso"),                         # CustomISOOutputPath
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "WIM\Windows 11 Enterprise"),                         # CustomWIMDir
-            1,                                                                                                         # SourceIndex
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-11-enterprise-evaluation.iso")  # SourceISOPath
+            "OZO-AD-Lab-Client",                                                                                # CustomISOLabel
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Builds\Client"),                              # CustomISOBUildDir
+            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Client.iso"),                      # CustomISOMovePath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Mount"),                                      # CustomISOMountDir
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "ISO\OZO-AD-Lab-Client.iso"),                  # CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "WIM\Windows Client"),                         # CustomWIMDir
+            1,                                                                                                  # SourceIndex
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-client-evaluation.iso")  # SourceISOPath
         )))
         # Process the server ISO
         $this.ozoISOs.Add(([OzoISO]::new(
-            "OZO-AD-Lab-Server",                                                                                    # CustomISOLabel
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Builds\Server"),                                  # CustomISOBuildDir
-            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Server.iso"),                          # CustomISOMovePath
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Mount"),                                          # CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "ISO\OZO-AD-Lab-Server.iso"),                      # CustomISOOutputPath
-            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "WIM\Windows Server 2025"),                        # CustomWIMDir
-            2,                                                                                                      # SourceIndex
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-server-2025-evaluation.iso") # SourceISOPath
+            "OZO-AD-Lab-Server",                                                                                # CustomISOLabel
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Builds\Server"),                              # CustomISOBuildDir
+            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Server.iso"),                      # CustomISOMovePath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Mount"),                                      # CustomISOMountDir
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "ISO\OZO-AD-Lab-Server.iso"),                  # CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "WIM\Windows Server"),                         # CustomWIMDir
+            2,                                                                                                  # SourceIndex
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-server-evaluation.iso")  # SourceISOPath
         )))
         # Iterate over ISOs
         ForEach ($ozoISO in $this.ozoISOs) {
