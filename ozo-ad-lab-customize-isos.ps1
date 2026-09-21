@@ -1,7 +1,7 @@
 #Requires -Modules @{ModuleName="OZO";ModuleVersion="1.5.1"},OZOLogger -Version 5.1
 
 <#PSScriptInfo
-    .VERSION 0.0.1
+    .VERSION 1.0.0
     .GUID 107291d5-0444-4f57-b173-8578b222576b
     .AUTHOR Andy Lievertz <alievertz@sonichealthcareusa.com>
     .COMPANYNAME One Zero One
@@ -20,7 +20,7 @@
     .SYNOPSIS
     See description.
     .DESCRIPTION 
-    Leverages resources from the One Zero One AD Lab release to customize AlmaLinux and Microsoft installer ISOs.
+    Customizes Microsoft installer ISOs for user with the One Zero One AD Lab.
     .PARAMETER OZOADLabDir
     Location of the "ozo-ad-lab" directory. Defaults to $Env:SystemDrive\ozo-ad-lab.
     .LINK
@@ -33,15 +33,16 @@
 )
 
 # CLASSES
-Class OZOADLCIMain {
+Class Main {
     # PROPERTIES: Strings
     [String] $downloadsDirectory = $null
     [String] $ozoADLabDirectory  = $null
     # PROPERTIES: PSCustomObjects
-    [PSCustomObject] $ISO    = $null
     [PSCustomObject] $ozoLogger = $null
+    # PROPERTIES: PSCustomObject Lists
+    [System.Collections.Generic.List[PSCustomObject]] $ozoISOs = @()
     # METHODS: Constructor method
-    OZOADLCIMain($OZOADLabDir) {
+    Main($OZOADLabDir) {
         # Set properties
         $this.downloadsDirectory = (Join-Path -Path $Env:USERPROFILE -ChildPath "Downloads")
         $this.ozoADLabDirectory  = $OZOADLabDir
@@ -49,290 +50,120 @@ Class OZOADLCIMain {
         $this.ozoLogger = (New-OZOLogger)
         # Log a process start message
         $this.ozoLogger.Write("Process starting.","Information")
-         # Router
-         $this.ozoLogger.Write("Processing the Router ISO.","Information")
-         $this.ISO = [OZOADLCIISO]::new(
-             "Router", #Build
-             "OZO-AD-Lab-Router", #CustomISOLabel
-             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Linux"), #CustomISOLinuxDir
-             (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Router.iso"), #CustomISOMOvePath
-             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "OZO-AD-Lab-Router.iso"), #CustomISOOutputPath
-             (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\almalinux-boot.iso") #SourceISOPath
-         )
-         $this.ozoLogger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
-        # Client
-        $this.ozoLogger.Write("Processing the Client ISO.","Information")
-        $this.ISO = [OZOADLCIISO]::new(
-            "Client",                                                                                                  # Build
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Builds\Client"),                                      # CustomISOBUildDir
+        # Process the client ISO
+        $this.ozoISOs.Add(([OzoISO]::new(
             "OZO-AD-Lab-Client",                                                                                       # CustomISOLabel
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Builds\Client"),                                     # CustomISOBUildDir
             (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Client.iso"),                             # CustomISOMovePath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Mount"),                                              # CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\OZO-AD-Lab-Client.iso"),                          # CustomISOOutputPath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "WIM\Windows 11 Enterprise"),                          # CustomWIMDir
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Mount"),                                             # CustomISOMountDir
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "ISO\OZO-AD-Lab-Client.iso"),                         # CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "WIM\Windows 11 Enterprise"),                         # CustomWIMDir
             1,                                                                                                         # SourceIndex
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-11-enterprise-evaluation.iso"), # SourceISOPath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-11-laof.iso")                   # SourceLAoFISOPath
-        )
-        $this.ozoLogger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
-        # Server
-        $this.ozoLogger.Write("Processing the Server ISO.","Information")
-        $this.ISO = [OZOADLCIISO]::new(
-            "Server",                                                                                                 # Build
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Builds\Server"),                                     # CustomISOBuildDir
-            "OZO-AD-Lab-Server",                                                                                      # CustomISOLabel
-            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Server.iso"),                            # CustomISOMovePath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "Mount"),                                             # CustomISOMountDir
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\OZO-AD-Lab-Server.iso"),                         # CustomISOOutputPath
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "WIM\Windows Server 2025"),                           # CustomWIMDir
-            2,                                                                                                        # SourceIndex
-            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-server-2022-evaluation.iso"),  # SourceISOPath
-            $null                                                                                                     # SourceLAoFISOPath
-        )
-        $this.ozoLogger.Write(("Results: " + ($this.ISO.Messages -Join("`r`n"))),"Information")
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-11-enterprise-evaluation.iso")  # SourceISOPath
+        )))
+        # Process the server ISO
+        $this.ozoISOs.Add(([OzoISO]::new(
+            "OZO-AD-Lab-Server",                                                                                    # CustomISOLabel
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Builds\Server"),                                  # CustomISOBuildDir
+            (Join-Path -Path $this.downloadsDirectory -ChildPath "OZO-AD-Lab-Server.iso"),                          # CustomISOMovePath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "Mount"),                                          # CustomISOMountDir
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "ISO\OZO-AD-Lab-Server.iso"),                      # CustomISOOutputPath
+            (Join-Path -Path $this.ozoADLabDirectory  -ChildPath "WIM\Windows Server 2025"),                        # CustomWIMDir
+            2,                                                                                                      # SourceIndex
+            (Join-Path -Path $this.ozoADLabDirectory -ChildPath "ISO\microsoft-windows-server-2025-evaluation.iso") # SourceISOPath
+        )))
+        # Iterate over ISOs
+        ForEach ($ozoISO in $this.ozoISOs) {
+            # Log the results for the current ISO
+            $this.ozoLogger.Write(($ozoISO.CustomIsoLabel + " results: " + ($ozoISO.Messages -Join(";"))),"Information")
+        }
         # Log a process end message
         $this.ozoLogger.Write("Process complete.","Information")
     }
 }
 
-Class OZOADLCIISO {
-    # PROPERTIES: Booleans, Int16s, Strings
-    [Boolean] $Proceed             = $true
-    [Boolean] $Validates           = $true
-    [Int16]   $sourceIndex         = $null
-    [String]  $Build               = $null
-    [String]  $customISOBuildDir   = $null
+Class OzoISO {
+    # PROPERTIES: Booleans
+    [Boolean] $Proceed = $true
+    [Boolean] $Validates = $true
+    # PROPERTIES: Int16s
+    [Int16] $sourceIndex = $null
+    # PROPERTIES: Strings
     [String]  $customISOLabel      = $null
-    [String]  $customISOLinuxDir   = $null
-    [String]  $customISOMovePath   = $null
-    [String]  $customISOMountDir   = $null
-    [String]  $customISOOutputPath = $null
-    [String]  $customWIMDir        = $null
-    [String]  $efisysBinPath       = $null
     [String]  $mountDrive          = $null
-    [String]  $oscdimgExePath      = $null
-    [String]  $sourceISOPath       = $null
-    [String]  $sourceLAoFISOPath   = $null
     # PROPERTIES: Lists
     [System.Collections.Generic.List[String]] $Messages = @()
-    # METHODS: Constructor method - Linux overload
-    OZOADLCIISO($Build,$CustomISOLabel,$CustomISOLinuxDir,$CustomISOMovePath,$CustomISOOutputPath,$SourceISOPath) {
+    # METHODS: Constructor method
+    OzoISO($CustomISOLabel,$CustomISOBuildDir,$CustomISOMovePath,$CustomISOMountDir,$CustomISOOutputPath,$CustomWIMDir,$SourceIndex,$SourceISOPath) {
         # Set properties
-        $this.Build               = $Build
-        $this.customISOLabel      = $CustomISOLabel
-        $this.customISOLinuxDir   = $CustomISOLinuxDir
-        $this.customISOMovePath   = $CustomISOMovePath
-        $this.customISOOutputPath = $CustomISOOutputPath
-        $this.oscdimgExePath      = (Join-Path -Path ${Env:ProgramFiles(x86)} -ChildPath "Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe")
-        $this.sourceISOPath       = $SourceISOPath
-        # Determine if ISO validates
-        If ($this.ValidateLinISO() -eq $true) {
-            # ISO validates; call ProcessLinISO to create the custom ISO
-            $this.ProcessLinISO()
-        }
-    }
-    # METHODS: Constructor method - Windows overload
-    OZOADLCIISO($Build,$CustomISOBuildDir,$CustomISOLabel,$CustomISOMovePath,$CustomISOMountDir,$CustomISOOutputPath,$CustomWIMDir,$SourceIndex,$SourceISOPath,$SourceLAoFISOPath) {
-        # Set properties
-        $this.Build               = $Build
-        $this.customISOBuildDir   = $CustomISOBuildDir
-        $this.customISOLabel      = $CustomISOLabel
-        $this.customISOMovePath   = $CustomISOMovePath
-        $this.customISOMountDir   = $CustomISOMountDir
-        $this.customISOOutputPath = $CustomISOOutputPath
-        $this.customWIMDir        = $CustomWIMDir
-        $this.efisysBinPath       = (Join-Path -Path $this.customISOBuildDir -ChildPath "efi\microsoft\boot\efisys.bin")
-        $this.oscdimgExePath      = (Join-Path -Path ${Env:ProgramFiles(x86)} -ChildPath "Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe")
-        $this.sourceIndex         = $SourceIndex
-        $this.sourceISOPath       = $SourceISOPath
-        $this.sourceLAoFISOPath   = $SourceLAoFISOPath
-        # Determine if ISO validates
-        If ($this.ValidateWinISO() -eq $true) {
-            # ISO validates; call ProcessWinISO to create the custom ISO
-            $this.ProcessWinISO()
-        }
-    }
-    # METHODS: Validate Linux ISO method
-    Hidden [Boolean] ValidateLinISO() {
-        # Control variable
-        [Boolean] $Return = $true
-        # Check if WSL Debian is installed
-        If ([Boolean](wsl -l | Where-Object {$_.Replace("`0","") -Match '^Debian'}) -eq $false) {
-            # Did not find WSL Debian
-            $this.Messages.Add("Missing WSL Debian. Please see https://onezeroone.dev/active-directory-lab-part-ii-customization-prerequisites/ for more information.")
-            $Return = $false
-        }
-        # Determine if custom ISO already exists in Downloads directory
-        If ([Boolean](Test-Path -Path $this.customISOMovePath -ErrorAction SilentlyContinue) -eq $true) {
-            # Custom ISO already exists
-            $this.Messages.Add(("Found " + $this.customISOMovePath + "; skipping."))
-            $Return = $false
-        }
-        # Determine if custom ISO already exists in OZO AD Lab directory
-        If ([Boolean](Test-Path -Path $this.customISOOutputPath -ErrorAction SilentlyContinue) -eq $true) {
-            # Custom ISO already exists
-            $this.Messages.Add(("Found " + $this.customISOOutputPath + "; skipping."))
-            $Return = $false
-        }
-        # Determine if the source ISO does not exist
-        If ([Boolean](Test-Path -Path $this.sourceISOPath -ErrorAction SilentlyContinue) -eq $false) {
-            # Source ISO does not exist
-            $this.Messages.Add(("Missing " + $this.sourceISOPath + "; skipping."))
-            $Return = $false
-        }
-        # Return
-        return $Return
-    }
-    # METHODS: Process Linux ISO method
-    Hidden [Void] ProcessLinISO() {
+        $this.customISOLabel = $CustomISOLabel
         # Local variables
-        [String] $wslResult         = $null
-        [String] $wslGrubPath       = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-ad-lab-grub.cfg"))
-        [String] $wslKickstartPath  = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-ad-lab-router-ks.cfg"))
-        [String] $wslSourceISOPath  = (New-OZOWSLPathFromWindowsPath -WindowsPath $this.sourceISOPath)
-        [String] $wslTargetISOPath  = (New-OZOWSLPathFromWindowsPath -WindowsPath $this.customISOOutputPath)
-        [String] $wslTargetISOLabel = $this.customISOLabel
-        [String] $wslScriptPath     = (New-OZOWSLPathFromWindowsPath -WindowsPath (Join-Path -Path $this.customISOLinuxDir -ChildPath "ozo-create-router-iso.sh"))
-        # Determine if this ISO is valid
-        If ($this.Validates -eq $true) {
-            # ISO is valid; use WSL Debian to call the AlmaLinux ISO customization script
-            $wslResult = (& wsl --distribution "Debian" --user root GRUB_PATH="$wslGrubPath" KICKSTART_PATH="$wslKickstartPath" SOURCE_ISO_PATH="$wslSourceISOPath" TARGET_ISO_PATH="$wslTargetISOPath" TARGET_ISO_LABEL="$wslTargetISOLabel" $wslScriptPath)
-            If ($wslResult -eq "TRUE") {
-                # Move the ISO
-                If ($this.MoveISO() -eq $true) {
-                    # Moved ISO; report success
-                    $this.Messages.Add("Success")
-                }
-            } Else {
-                $this.Messages.Add(("Error creating " + $this.customISOOutputPath))
-            }
-        }
-    }
-    # METHODS: Validate Windows ISO method
-    Hidden [Boolean] ValidateWinISO() {
-        # Control variable
-        [Boolean] $Return = $true
-        # Determine if oscdimg.exe is not present
-        If ((Test-Path -Path $this.oscdimgExePath) -eq $false) {
-            # Did not find oscdimg.exe; report
-            $this.Messages.Add("Missing oscdimg.exe. Please see https://onezeroone.dev/active-directory-lab-part-ii-customization-prerequisites/ for more information.")
-            $Return = $false
-        }
-        # Determine if the custom ISO already exists in Downloads directory
-        If ((Test-Path -Path $this.customISOMovePath) -eq $true) {
-            # Custom ISO exists in the Downloads directory
-            $this.Messages.Add(("Found " + $this.customISOMovePath + "; skipping."))
-            $Return = $false
-        }
-        # Determine if the custom ISO already exists in the OZO AD Lab directory
-        If ((Test-Path -Path $this.customISOOutputPath) -eq $true) {
-            # Custom ISO exists in the OZO AD Lab directory
-            $this.Messages.Add(("Found " + $this.customISOOutputPath + "; skipping."))
-            $Return = $false
-        }
-        # Determine if the source ISO does not exist
-        If ((Test-Path -Path $this.sourceISOPath) -eq $false) {
-            # Source ISO does not exist
-            $this.Messages.Add(("Missing " + $this.sourceISOPath + "; skipping."))
-            $Return = $false
-        }
-        # Determine that the build directory exists
-        If ((Test-Path -Path $this.customISOBuildDir) -eq $false) {
-            $this.Messages.Add("Build directory does not exist; skipping.")
-            $Return = $false
-        }
-        # Switch for build-specific criteria
-        Switch($this.Build) {
-            "Client" {
-                # Determine if the Windows 11 Enterprise Languages & Optional Features ISO does not exist
-                If ((Test-Path -Path $this.sourceLAoFISOPath) -eq $false) {
-                    # LAoF ISO does not exist
-                    $this.Messages.Add(("Missing " + $this.sourceLAoFISOPath + "; skipping."))
-                    $Return = $false
-                }
-                break
-            }
-            "DC" {
-                break
-            }
-            "Server" {
-                break
-            }
-            default {
-                break
-            }
-        }
-        # Return
-        return $Return
-    }
-    # METHODS: Process Windows ISO method
-    Hidden [Void] ProcessWinISO() {
-        # Mount the source ISO
-        If ($this.MountISO($this.sourceISOPath) -eq $true) {
-            # Source ISO mount; copy the contents to the build directory
-            If ($this.CopyISO((Join-Path -Path $this.mountDrive -ChildPath "*"),$this.customISOBuildDir) -eq $true) {
-                # Contents copied; dismount the ISO
-                If ($this.DismountISO($this.sourceISOPath) -eq $true) {
-                    # ISO dismounted; move the install WIM
-                    If ($this.MoveWIM((Join-Path -Path $this.customISOBuildDir -ChildPath "sources\install.wim"),$this.customWIMDir) -eq $true) {
-                        # Moved WIM; export the desired Index back to the build directory
-                        If ($this.ExportImage((Join-Path -Path $this.customWIMDir -ChildPath "install.wim"),$this.sourceIndex,(Join-Path -Path $this.customISOBuildDir -ChildPath "sources\install.wim")) -eq $true) {
-                            # Exported the Index back to install.wim; switch for build-specific steps
-                            Switch($this.Build) {
-                                "Client" {
-                                    # Mount the WIM for customization
-                                    If ($this.MountWIM((Join-Path -Path $this.customISOBuildDir -ChildPath "sources\install.wim"),1,$this.customISOMountDir) -eq $true) {
-                                        # Mounted the WIM for customization; mount the LAoF ISO
-                                        If ($this.MountISO($this.SourceLAoFISOPath) -eq $true) {
-                                            # LAoF ISO mounted; determine if RSAT install is successful
-                                            If ($this.InstallRSAT() -eq $true) {
-                                                # RSAT installation succeeded; determine if WIM is dismounted
-                                                If ($this.DismountWIM($this.customISOMountDir,$true)) {
-                                                    # WIM is dismounted; determine if LAofISO is dismounted
-                                                    If ($this.DismountISO($this.SourceLAoFISOPath) -eq $true) {
-                                                        # LAoF ISO is dismounted; determine if the ISO was created
-                                                        If ($this.CreateWinISO() -eq $true) {
-                                                            # ISO was created; Determine if the ISO is moved
-                                                            If ($this.MoveISO() -eq $true) {
-                                                                # ISO is moved; report success
-                                                                $this.Messages.Add("Success")
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            } Else {
-                                                # RSAT installation failed; dismount the WIM (abandoning changes) and the ISO
-                                                $this.DismountWIM($this.customISOMountDir,$false)
-                                                $this.DismountISO($this.SourceLAoFISOPath)
-                                            }
-                                        }
+        [String] $OscdImgExePath = (Join-Path -Path ${Env:ProgramFiles(x86)} -ChildPath "Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe")
+        # Determine if ISO validates
+        If ($this.ValidateISO($CustomISOBuildDir,$CustomISOMovePath,$CustomISOOutputPath,$OscdImgExePath,$SourceISOPath) -eq $true) {
+            # ISO validates; mount the source ISO
+            If ($this.MountISO($SourceISOPath) -eq $true) {
+                # Source ISO mount; copy the contents to the build directory
+                If ($this.CopyISO((Join-Path -Path $this.mountDrive -ChildPath "*"),$CustomISOBuildDir) -eq $true) {
+                    # Contents copied; dismount the ISO
+                    If ($this.DismountISO($SourceISOPath) -eq $true) {
+                        # ISO dismounted; move the install WIM
+                        If ($this.MoveWIM((Join-Path -Path $CustomISOBuildDir -ChildPath "sources\install.wim"),$CustomWIMDir) -eq $true) {
+                            # Moved WIM; export the desired Index back to the build directory
+                            If ($this.ExportImage((Join-Path -Path $CustomWIMDir -ChildPath "install.wim"),$SourceIndex,(Join-Path -Path $CustomISOBuildDir -ChildPath "sources\install.wim")) -eq $true) {
+                                # Create the Windows ISO
+                                If ($this.CreateISO($CustomISOLabel,$CustomISOBuildDir,$CustomISOOutputPath,$OscdImgExePath) -eq $true) {
+                                    # Move the ISO
+                                    If ($this.MoveISO($CustomISOOutputPath,$CustomISOMovePath) -eq $true) {
+                                        # Moved ISO; report success
+                                        $this.Messages.Add("Success")
                                     }
-                                    break
-                                }
-                                "Server" {
-                                    # Create the Windows ISO
-                                    If ($this.CreateWinISO() -eq $true) {
-                                        # Move the ISO
-                                        If ($this.MoveISO() -eq $true) {
-                                            # Moved ISO; report success
-                                            $this.Messages.Add("Success")
-                                        }
-                                    }
-                                    break
-                                }
-                                default {
-                                    $this.Messages.Add(("Unhandled build: " + $this.Build))
-                                    break
                                 }
                             }
                         }
                     }
+                } Else {
+                    # Contents not copied; dismount the ISO
+                    $this.DismountISO($SourceISOPath)
                 }
-            } Else {
-                # Contents not copied; dismount the ISO
-                $this.DismountISO($this.sourceISOPath)
             }
         }
+    }
+    # METHODS: Validate ISO method
+    Hidden [Boolean] ValidateISO($CustomISOBuildDir,$CustomISOMovePath,$CustomISOOutputPath,$OscdImgExePath,$SourceISOPath) {
+        # Control variable
+        [Boolean] $Return = $true
+        # Determine if oscdimg.exe is not present
+        If ((Test-Path -Path $OscdImgExePath) -eq $false) {
+            # Did not find oscdimg.exe; report
+            $this.Messages.Add(($OscdImgExePath + " not found. Please see https://onezeroone.dev/active-directory-lab-part-ii-customization-prerequisites/ for more information"))
+            $Return = $false
+        }
+        # Determine if the custom ISO already exists in Downloads directory
+        If ((Test-Path -Path $CustomISOMovePath) -eq $true) {
+            # Custom ISO exists in the Downloads directory
+            $this.Messages.Add(($CustomISOMovePath + " exists"))
+            $Return = $false
+        }
+        # Determine if the custom ISO already exists in the OZO AD Lab directory
+        If ((Test-Path -Path $CustomISOOutputPath) -eq $true) {
+            # Custom ISO exists in the OZO AD Lab directory
+            $this.Messages.Add(($CustomISOOutputPath + " exists"))
+            $Return = $false
+        }
+        # Determine if the source ISO does not exist
+        If ((Test-Path -Path $SourceISOPath) -eq $false) {
+            # Source ISO does not exist
+            $this.Messages.Add(($SourceISOPath + " does not exist"))
+            $Return = $false
+        }
+        # Determine that the build directory exists
+        If ((Test-Path -Path $CustomISOBuildDir) -eq $false) {
+            $this.Messages.Add(($CustomISOBuildDir + " does not exist"))
+            $Return = $false
+        }
+        # Return
+        return $Return
     }
     # METHODS: Mount ISO method
     Hidden [Boolean] MountISO($ISOPath) {
@@ -345,7 +176,7 @@ Class OZOADLCIISO {
             $this.mountDrive = ((Get-DiskImage -ImagePath $ISOPath -ErrorAction Stop | Get-Volume -ErrorAction Stop).DriveLetter + ":")
         } Catch {
             # Failure
-            $this.Messages.Add(("Failed to mount " + $ISOPath + "; skipping."))
+            $this.Messages.Add(("Failed to mount " + $ISOPath))
             $Return = $false
         }
         # Return
@@ -361,7 +192,7 @@ Class OZOADLCIISO {
             # Success
         } Catch {
             # Failure
-            $this.Messages.Add("Failed to copy source ISO; skipping.")
+            $this.Messages.Add("Failed to copy source ISO")
             $Return = $false
         }
         # Return
@@ -377,7 +208,7 @@ Class OZOADLCIISO {
             # Success
         } Catch {
             # Failure
-            $this.Messages.Add(("Failed to move " + $SourcePath + " to " + $TargetPath + "; skipping."))
+            $this.Messages.Add(("Failed to move " + $SourcePath + " to " + $TargetPath))
             $Return = $false
         }
         # Return
@@ -393,7 +224,7 @@ Class OZOADLCIISO {
             # Success; 
         } Catch {
             # Failure
-            $this.Messages.Add(("Failed to dismount " + $ISOPath + "; skipping."))
+            $this.Messages.Add(("Failed to dismount " + $ISOPath))
             $Return = $false
         }
         # Return
@@ -409,114 +240,50 @@ Class OZOADLCIISO {
             # Success; 
         } Catch {
             # Failure
-            $this.Messages.Add(("Failed to export Index " + $ImageIndex.ToString() + " from " + $ImagePath + "; skipping."))
-            $Return = $false
-        }
-        # Return
-        return $Return
-    }
-    # METHODS: Install RSAT method
-    Hidden [Boolean] InstallRSAT() {
-        # Control variable
-        [Boolean] $Return = $true
-        # Try to install RSAT
-        Try {
-            [String] $rsatSource = (Join-Path -Path $this.mountDrive -ChildPath "LanguagesAndOptionalFeatures")
-            Get-WindowsCapability -Online -Name "RSAT*" -Source $rsatSource -ErrorAction Stop | Add-WindowsCapability -Source $rsatSource -Path $this.customISOMountDir -ErrorAction Stop
-            # Success
-        } Catch {
-            # Failure
-            $this.Messages.Add("Failed to install RSAT; skipping.")
-            $Return = $false
-        }
-        # Return
-        return $Return
-    }
-    # METHODS: Mount WIM method
-    Hidden [Boolean] MountWIM($ImagePath,$ImageIndex,$MountDir) {
-        # Control variable
-        [Boolean] $Return = $true
-        # Try to mount the WIM
-        Try {
-            Mount-WindowsImage -ImagePath $ImagePath -Index $ImageIndex -Path $MountDir -ErrorAction Stop
-            # Success
-        } Catch {
-            # Failure
-            $this.Messages.Add(("Failed to mount " + $ImagePath + "; skipping."))
-            $Return = $false
-        }
-        # Return
-        return $Return
-    }
-    # METHODS: Dismount WIM method
-    Hidden [Boolean] DismountWIM($MountDir,$Save) {
-        # Control variable
-        [Boolean] $Return = $true
-        # Try to dismount the WIM
-        Try {
-            # Determine if the WIM will be saved
-            If ($Save -eq $true) {
-                # The WIM will be saved
-                Dismount-WindowsImage -Path $MountDir -Save -ErrorAction Stop
-            } Else {
-                # The WIM will not be saved
-                Dismount-WindowsImage -Path $MountDir -Discard -ErrorAction Stop
-            }
-        } Catch {
-            # Failure
-            $this.Messages.Add(("Failed to dismount " + $MountDir + "; skipping."))
+            $this.Messages.Add(("Failed to export Index " + $ImageIndex.ToString() + " from " + $ImagePath))
             $Return = $false
         }
         # Return
         return $Return
     }
     # METHODS: Create Windows ISO method
-    Hidden [Boolean] CreateWinISO() {
+    Hidden [Boolean] CreateISO($CustomISOLabel,$CustomISOBuildDir,$CustomISOOutputPath,$OscdImgExePath) {
         # Control variable
         [Boolean] $Return = $true
         # Local variables
-        [String] $labl = $this.customISOLabel
-        [String] $esbp = $this.efisysBinPath
-        [String] $cibd = $this.customISOBuildDir
-        [String] $ciop = $this.customISOOutputPath
+        [String] $labl = $CustomISOLabel
+        [String] $esbp = (Join-Path -Path $CustomISOBuildDir -ChildPath "efi\microsoft\boot\efisys.bin")
+        [String] $cibd = $CustomISOBuildDir
+        [String] $ciop = $CustomISOOutputPath
         # Try to create the ISO
         Try {
-            Start-Process -Wait -NoNewWindow -FilePath $this.oscdimgExePath -ArgumentList "-u2 -udfver102 -t -l$labl -b$esbp $cibd $ciop" -ErrorAction Stop
+            Start-Process -Wait -NoNewWindow -FilePath $OscdimgExePath -ArgumentList "-u2 -udfver102 -t -l$labl -b$esbp $cibd $ciop" -ErrorAction Stop
             # Success
         } Catch {
             # Failure
-            $this.Messages.Add(("Failed to create the custom ISO; skipping. Error message is: " + $_))
+            $this.Messages.Add(("Failed to create the custom ISO with error " + $_))
             $Return = $false
         }
         # Return
         return $Return
     }
     # METHODS: Move ISO method
-    Hidden [Boolean] MoveISO() {
+    Hidden [Boolean] MoveISO($CustomISOOutputPath,$CustomISOMovePath) {
         # Control variable
         [Boolean] $Return = $true
         # Try to move the ISO
         Try {
-            Move-Item -Path $this.customISOOutputPath -Destination $this.customISOMovePath -ErrorAction Stop
-            Unblock-File -Path $this.customISOMovePath -ErrorAction Stop
+            Move-Item -Path $CustomISOOutputPath -Destination $CustomISOMovePath -ErrorAction Stop
+            Unblock-File -Path $CustomISOMovePath -ErrorAction Stop
             # Success
         } Catch {
             # Failure
-            $this.Messages.Add("Failed to move the custom ISO to the Downloads directory; skipping.")
+            $this.Messages.Add(("Failed to move the custom ISO from " + $CustomISOOutputPath + " to " + $CustomISOMovePath))
             $Return = $false
         }
         # Return
         return $Return
     }
-}
-
-# FUNCTIONS
-Function New-OZOWSLPathFromWindowsPath {
-    param(
-        [Parameter(Mandatory=$true,HelpMessage="The Windows path to convert")][String]$WindowsPath
-    )
-    # Local variables
-    return ($WindowsPath.Replace("\","/")).Replace($Env:SystemDrive,("/mnt/" + ($Env:SystemDrive.Split(":"))[0].ToLower()))
 }
 
 # Create a Main object
